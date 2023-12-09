@@ -3,7 +3,7 @@ import 'dotenv/config';
 
 import usersRouter from './routes/users.routes';
 import databaseService from './services/database.services';
-import { defaultErrorHandler } from './utils/handlers';
+import { defaultErrorHandler } from './middlewares/errors.middlewares';
 
 const app = express();
 const port = 4000;

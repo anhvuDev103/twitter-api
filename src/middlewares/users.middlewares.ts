@@ -1,110 +1,279 @@
 import { NextFunction, Request, Response } from 'express';
 import { checkSchema } from 'express-validator';
-import { ErrorWithStatus } from '~/models/Errors';
+
+import { MESSAGE } from '~/constants/messages';
+import databaseService from '~/services/database.services';
 import usersService from '~/services/users.services';
+import { hashPassword } from '~/utils/crypto';
 import { validate } from '~/utils/validation';
 
-export const loginValidator = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({
-      error: 'Missing email or password!'
-    });
-  }
-
-  next();
-};
-
 export const registerValidator = validate(
-  checkSchema({
-    name: {
-      notEmpty: true,
-      isString: true,
-      isLength: {
-        options: {
-          min: 1,
-          max: 100
-        }
-      },
-      trim: true
-    },
-    email: {
-      notEmpty: true,
-      isEmail: true,
-      trim: true,
-      custom: {
-        options: async (value) => {
-          const isExistedEmail = await usersService.checkEmailExist(value);
-          if (isExistedEmail) {
-            throw new Error('Email already exists');
-          }
-          return true;
-        }
-      }
-    },
-    password: {
-      notEmpty: true,
-      isString: true,
-      isLength: {
-        options: {
-          min: 6,
-          max: 50
-        }
-      },
-      isStrongPassword: {
-        options: {
-          minLength: 6,
-          minLowercase: 1,
-          minUppercase: 1,
-          minNumbers: 1,
-          minSymbols: 1
+  checkSchema(
+    {
+      name: {
+        notEmpty: {
+          errorMessage: MESSAGE.NAME_IS_REQUIRED
         },
-        errorMessage:
-          'Password must be at least 6 characters long and contain at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol'
-      }
-    },
-    confirm_password: {
-      notEmpty: true,
-      isString: true,
-      isLength: {
-        options: {
-          min: 6,
-          max: 50
+        isString: {
+          errorMessage: MESSAGE.NAME_MUST_BE_A_STRING
+        },
+        isLength: {
+          options: {
+            min: 1,
+            max: 100
+          },
+          errorMessage: MESSAGE.NAME_LENGTH_MUST_BE_FROM_1_TO_100
+        },
+        trim: true
+      },
+      email: {
+        notEmpty: {
+          errorMessage: MESSAGE.EMAIL_IS_REQUIRED
+        },
+        isEmail: {
+          errorMessage: MESSAGE.EMAIL_IS_INVALID
+        },
+        trim: true,
+        custom: {
+          options: async (value) => {
+            const isExistedEmail = await usersService.checkEmailExist(value);
+            if (isExistedEmail) {
+              throw new Error(MESSAGE.EMAIL_ALREADY_EXISTS);
+            }
+            return true;
+          }
         }
       },
-      isStrongPassword: {
-        options: {
-          minLength: 6,
-          minLowercase: 1,
-          minUppercase: 1,
-          minNumbers: 1,
-          minSymbols: 1
+      password: {
+        notEmpty: {
+          errorMessage: MESSAGE.PASSWORD_IS_REQUIRED
         },
-        errorMessage:
-          'Password must be at least 6 characters long and contain at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol'
+        isString: true,
+        isLength: {
+          options: {
+            min: 6,
+            max: 50
+          },
+          errorMessage: MESSAGE.PASSWORD_LENGTH_MUST_BE_FROM_6_TO_50
+        },
+        isStrongPassword: {
+          options: {
+            minLength: 6,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1
+          },
+          errorMessage: MESSAGE.PASSWORD_MUST_BE_STRONG
+        }
       },
-      custom: {
-        options: (value, { req }) => {
-          if (value !== req.body.password) {
-            throw new Error('Password confirmation does not match password');
-          }
+      confirm_password: {
+        notEmpty: {
+          errorMessage: MESSAGE.CONFIRM_PASSWORD_IS_REQUIRED
+        },
+        isString: true,
+        isLength: {
+          options: {
+            min: 6,
+            max: 50
+          },
+          errorMessage: MESSAGE.CONFIRM_PASSWORD_LENGTH_MUST_BE_FROM_6_TO_50
+        },
+        isStrongPassword: {
+          options: {
+            minLength: 6,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1
+          },
+          errorMessage: MESSAGE.CONFIRM_PASSWORD_MUST_BE_STRONG
+        },
+        custom: {
+          options: (value, { req }) => {
+            if (value !== req.body.password) {
+              throw new Error(
+                MESSAGE.CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD
+              );
+            }
 
-          return true;
+            return true;
+          }
+        }
+      },
+      date_of_birth: {
+        isISO8601: {
+          options: {
+            strict: true,
+            strictSeparator: true
+          },
+          errorMessage: MESSAGE.DATE_OF_BIRTH_MUST_BE_ISO8601
         }
       }
     },
-    date_of_birth: {
-      notEmpty: true,
-      isISO8601: {
-        options: {
-          strict: true,
-          strictSeparator: true
+    ['body']
+  )
+);
+
+export const loginValidator = validate(
+  checkSchema(
+    {
+      email: {
+        notEmpty: {
+          errorMessage: MESSAGE.EMAIL_IS_REQUIRED
+        },
+        isEmail: {
+          errorMessage: MESSAGE.EMAIL_IS_INVALID
+        },
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            const user = await databaseService.users.findOne({
+              email: value,
+              password: hashPassword(req.body.password)
+            });
+            if (user === null) {
+              throw new Error(MESSAGE.EMAIL_OR_PASSWORD_IS_INCORRECT);
+            }
+
+            req.user = user;
+
+            return true;
+          }
+        }
+      },
+      password: {
+        notEmpty: {
+          errorMessage: MESSAGE.PASSWORD_IS_REQUIRED
+        },
+        isString: true,
+        isLength: {
+          options: {
+            min: 6,
+            max: 50
+          },
+          errorMessage: MESSAGE.PASSWORD_LENGTH_MUST_BE_FROM_6_TO_50
+        },
+        isStrongPassword: {
+          options: {
+            minLength: 6,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1
+          },
+          errorMessage: MESSAGE.PASSWORD_MUST_BE_STRONG
         }
       }
-    }
-  })
+    },
+    ['body']
+  )
+);
+
+export const logoutValidator = validate(
+  checkSchema(
+    {
+      name: {
+        notEmpty: {
+          errorMessage: MESSAGE.NAME_IS_REQUIRED
+        },
+        isString: {
+          errorMessage: MESSAGE.NAME_MUST_BE_A_STRING
+        },
+        isLength: {
+          options: {
+            min: 1,
+            max: 100
+          },
+          errorMessage: MESSAGE.NAME_LENGTH_MUST_BE_FROM_1_TO_100
+        },
+        trim: true
+      },
+      email: {
+        notEmpty: {
+          errorMessage: MESSAGE.EMAIL_IS_REQUIRED
+        },
+        isEmail: {
+          errorMessage: MESSAGE.EMAIL_IS_INVALID
+        },
+        trim: true,
+        custom: {
+          options: async (value) => {
+            const isExistedEmail = await usersService.checkEmailExist(value);
+            if (isExistedEmail) {
+              throw new Error(MESSAGE.EMAIL_ALREADY_EXISTS);
+            }
+            return true;
+          }
+        }
+      },
+      password: {
+        notEmpty: {
+          errorMessage: MESSAGE.PASSWORD_IS_REQUIRED
+        },
+        isString: true,
+        isLength: {
+          options: {
+            min: 6,
+            max: 50
+          },
+          errorMessage: MESSAGE.PASSWORD_LENGTH_MUST_BE_FROM_6_TO_50
+        },
+        isStrongPassword: {
+          options: {
+            minLength: 6,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1
+          },
+          errorMessage: MESSAGE.PASSWORD_MUST_BE_STRONG
+        }
+      },
+      confirm_password: {
+        notEmpty: {
+          errorMessage: MESSAGE.CONFIRM_PASSWORD_IS_REQUIRED
+        },
+        isString: true,
+        isLength: {
+          options: {
+            min: 6,
+            max: 50
+          },
+          errorMessage: MESSAGE.CONFIRM_PASSWORD_LENGTH_MUST_BE_FROM_6_TO_50
+        },
+        isStrongPassword: {
+          options: {
+            minLength: 6,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1
+          },
+          errorMessage: MESSAGE.CONFIRM_PASSWORD_MUST_BE_STRONG
+        },
+        custom: {
+          options: (value, { req }) => {
+            if (value !== req.body.password) {
+              throw new Error(
+                MESSAGE.CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD
+              );
+            }
+
+            return true;
+          }
+        }
+      },
+      date_of_birth: {
+        isISO8601: {
+          options: {
+            strict: true,
+            strictSeparator: true
+          },
+          errorMessage: MESSAGE.DATE_OF_BIRTH_MUST_BE_ISO8601
+        }
+      }
+    },
+    ['body']
+  )
 );

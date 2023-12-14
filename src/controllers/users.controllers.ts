@@ -3,12 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core';
 
 import usersService from '~/services/users.services';
 import { RegisterRequestBody } from '~/models/requests/User.requests';
-
-export const loginController = (req: Request, res: Response) => {
-  res.json({
-    status: 'OK'
-  });
-};
+import { MESSAGE } from '~/constants/messages';
 
 export const registerController = async (
   req: Request<ParamsDictionary, any, RegisterRequestBody>,
@@ -19,5 +14,25 @@ export const registerController = async (
   return res.json({
     status: 'OK',
     result
+  });
+};
+
+export const loginController = async (req: Request, res: Response) => {
+  const { user } = req;
+  const result = await usersService.login(user!._id!.toString());
+
+  return res.json({
+    message: MESSAGE.LOGIN_SUCCESS,
+    result
+  });
+};
+
+export const logoutController = async (req: Request, res: Response) => {
+  // const { user } = req;
+  // const result = await usersService.login(user!._id!.toString());
+
+  return res.json({
+    message: MESSAGE.LOGOUT_SUCCESS
+    // result
   });
 };

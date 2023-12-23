@@ -1,12 +1,15 @@
 import { Router } from 'express';
 
 import {
+  emailVerifyController,
   loginController,
   logoutController,
-  registerController
+  registerController,
+  resendEmailVerifyController
 } from '~/controllers/users.controllers';
 import {
   accessTokenValidator,
+  emailVerifyTokenValidator,
   refreshTokenValidator
 } from '~/middlewares/tokens.middlewares';
 import {
@@ -50,8 +53,31 @@ router.post(
   '/logout',
   accessTokenValidator,
   refreshTokenValidator,
-  // logoutValidator,
   wrapRequestHandler(logoutController)
+);
+
+/**
+ * Description: Verify email when user client click on the link in email
+ * Path: /verify-email
+ * Method: POST
+ * Body: { verify_email_token: string }
+ */
+router.post(
+  '/verify-email',
+  emailVerifyTokenValidator,
+  wrapRequestHandler(emailVerifyController)
+);
+
+/**
+ * Description: Resend email verify
+ * Path: /resend-email-verify
+ * Method: POST
+ * Header: { Authorization: Beared <access_token> }
+ */
+router.post(
+  '/resend-email-verify',
+  accessTokenValidator,
+  wrapRequestHandler(resendEmailVerifyController)
 );
 
 export default router;

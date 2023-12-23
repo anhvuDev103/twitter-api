@@ -9,8 +9,17 @@ export interface RegisterRequestBody {
   date_of_birth: string;
 }
 
+export interface LoginRequestBody {
+  email: string;
+  password: string;
+}
+
 export interface LogoutRequestBody {
   refresh_token: string;
+}
+
+export interface EmailVerifyRequestBody {
+  email_verifyu_token: string;
 }
 
 export interface TokenPayload extends JwtPayload {

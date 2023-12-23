@@ -9,18 +9,18 @@ import { TokenPayload } from '~/models/requests/User.requests';
 
 interface SignTokenParams {
   payload: string | Buffer | object;
-  secretOrPrivateKey?: Secret;
+  secretOrPrivateKey: Secret;
   options?: SignOptions;
 }
 
 interface VerifyTokenParams {
   token: string;
-  secretOrPrivateKey?: Secret;
+  secretOrPrivateKey: Secret;
 }
 
 export function signToken({
   payload,
-  secretOrPrivateKey = process.env.JWT_SECRET as string,
+  secretOrPrivateKey,
   options = {
     algorithm: 'HS256'
   }
@@ -36,10 +36,7 @@ export function signToken({
   });
 }
 
-export function verifyToken({
-  token,
-  secretOrPrivateKey = process.env.JWT_SECRET as string
-}: VerifyTokenParams) {
+export function verifyToken({ token, secretOrPrivateKey }: VerifyTokenParams) {
   return new Promise<TokenPayload>((resolve, reject) => {
     jwt.verify(token, secretOrPrivateKey, (error, decoded) => {
       if (error) {

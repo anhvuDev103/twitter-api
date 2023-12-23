@@ -5,6 +5,7 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import usersService from '~/services/users.services';
 import {
   EmailVerifyRequestBody,
+  ForgotPasswordRequestBody,
   LoginRequestBody,
   LogoutRequestBody,
   RegisterRequestBody,
@@ -14,6 +15,7 @@ import { MESSAGE } from '~/constants/messages';
 import databaseService from '~/services/database.services';
 import HTTP_STATUS from '~/constants/httpStatus';
 import { UserVerifyStatus } from '~/constants/enums';
+import User from '~/models/schemas/User.schema';
 
 export const registerController = async (
   req: Request<ParamsDictionary, any, RegisterRequestBody>,
@@ -102,6 +104,16 @@ export const resendEmailVerifyController = async (
   }
 
   const result = await usersService.resendEmailVerify(user_id);
+
+  return res.json(result);
+};
+
+export const forgotPasswordController = async (
+  req: Request<ParamsDictionary, any, ForgotPasswordRequestBody>,
+  res: Response
+) => {
+  const { _id } = req.user as User;
+  const result = await usersService.forgotPassword(_id?.toString());
 
   return res.json(result);
 };

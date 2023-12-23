@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 
 import { UserVerifyStatus } from '~/constants/enums';
+import { PartialByKeys, RequireByKeys } from '~/utils/types';
 
 interface UserType {
   _id?: ObjectId;
@@ -22,8 +23,13 @@ interface UserType {
   cover_photo?: string;
 }
 
+type UserPayload = RequireByKeys<
+  User,
+  'name' | 'email' | 'date_of_birth' | 'password'
+>;
+
 class User {
-  _id?: ObjectId;
+  _id: ObjectId;
   name: string;
   email: string;
   date_of_birth: Date;
@@ -41,7 +47,7 @@ class User {
   avatar: string;
   cover_photo: string;
 
-  constructor(user: UserType) {
+  constructor(user: UserPayload) {
     const date = new Date();
 
     this._id = user._id || new ObjectId();

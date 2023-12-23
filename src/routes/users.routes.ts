@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import {
   emailVerifyController,
+  forgotPasswordController,
   loginController,
   logoutController,
   registerController,
@@ -13,6 +14,7 @@ import {
   refreshTokenValidator
 } from '~/middlewares/tokens.middlewares';
 import {
+  forgotPasswordValidator,
   loginValidator,
   logoutValidator,
   registerValidator
@@ -78,6 +80,18 @@ router.post(
   '/resend-email-verify',
   accessTokenValidator,
   wrapRequestHandler(resendEmailVerifyController)
+);
+
+/**
+ * Description: Submit email to reset password, send email to user
+ * Path: /forgot-password
+ * Method: POST
+ * Body: { email: string }
+ */
+router.post(
+  '/forgot-password',
+  forgotPasswordValidator,
+  wrapRequestHandler(forgotPasswordController)
 );
 
 export default router;

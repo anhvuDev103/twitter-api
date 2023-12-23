@@ -19,7 +19,11 @@ export interface LogoutRequestBody {
 }
 
 export interface EmailVerifyRequestBody {
-  email_verifyu_token: string;
+  email_verify_token: string;
+}
+
+export interface ForgotPasswordRequestBody {
+  email: string;
 }
 
 export interface TokenPayload extends JwtPayload {

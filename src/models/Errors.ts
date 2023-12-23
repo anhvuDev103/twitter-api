@@ -1,6 +1,6 @@
 import HTTP_STATUS from '~/constants/httpStatus';
 import { MESSAGE } from '~/constants/messages';
-import { AtLeast } from '~/utils/types';
+import { RequireByKeys } from '~/utils/types';
 
 type ErrorType = Record<
   string,
@@ -26,7 +26,7 @@ export class EntityError extends ErrorWithStatus {
   constructor({
     message = MESSAGE.VALIDATION_ERROR,
     errors
-  }: AtLeast<Omit<EntityError, 'status'>, 'errors'>) {
+  }: RequireByKeys<Omit<EntityError, 'status'>, 'errors'>) {
     super({
       message,
       status: HTTP_STATUS.UNPROCESSABLE_ENTITY

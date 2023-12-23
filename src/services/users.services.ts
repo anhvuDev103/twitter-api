@@ -55,6 +55,20 @@ class UsersService {
     });
   }
 
+  private signForgotPasswordToken(user_id: string) {
+    return signToken({
+      payload: {
+        user_id,
+        token_type: TokenType.ForgotPasswordToken
+      },
+      secretOrPrivateKey: process.env
+        .JWT_SECRET_FORGOT_PASSWORD_TOKEN as string,
+      options: {
+        expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN
+      }
+    });
+  }
+
   async checkEmailExist(email: string) {
     const user = await databaseService.users.findOne({
       email
@@ -172,6 +186,31 @@ class UsersService {
 
     return {
       message: MESSAGE.RESEND_VERIFY_EMAIL_SUCCESS
+    };
+  }
+
+  async forgotPassword(user_id: string) {
+    const forgot_password_token = await this.signForgotPasswordToken(user_id);
+
+    await databaseService.users.updateOne(
+      {
+        _id: new ObjectId(user_id)
+      },
+      {
+        $set: {
+          forgot_password_token
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    );
+
+    //Send email with link reset password
+    console.log('>> Check | forgot_password_token:', forgot_password_token);
+
+    return {
+      message: MESSAGE.CHECK_EMAIL_TO_RESET_PASSWORD
     };
   }
 }

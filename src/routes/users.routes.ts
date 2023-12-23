@@ -5,7 +5,10 @@ import {
   logoutController,
   registerController
 } from '~/controllers/users.controllers';
-import { accessTokenValidator } from '~/middlewares/tokens.middlewares';
+import {
+  accessTokenValidator,
+  refreshTokenValidator
+} from '~/middlewares/tokens.middlewares';
 import {
   loginValidator,
   logoutValidator,
@@ -46,6 +49,7 @@ router.post('/login', loginValidator, wrapRequestHandler(loginController));
 router.post(
   '/logout',
   accessTokenValidator,
+  refreshTokenValidator,
   // logoutValidator,
   wrapRequestHandler(logoutController)
 );

@@ -6,6 +6,7 @@ import { signToken } from '~/utils/jwt';
 import { TokenType } from '~/constants/enums';
 import RefreshToken from '~/models/schemas/RefreshToken.schema';
 import { ObjectId } from 'mongodb';
+import { MESSAGE } from '~/constants/messages';
 
 class UsersService {
   private signAccessAndRefreshToken(user_id: string) {
@@ -37,6 +38,13 @@ class UsersService {
         expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN
       }
     });
+  }
+
+  async checkEmailExist(email: string) {
+    const user = await databaseService.users.findOne({
+      email
+    });
+    return Boolean(user);
   }
 
   async register(_payload: RegisterRequestBody) {
@@ -71,14 +79,6 @@ class UsersService {
     const [access_token, refresh_token] =
       await this.signAccessAndRefreshToken(user_id);
 
-    console.log(
-      '???',
-      new RefreshToken({
-        token: refresh_token,
-        user_id: new ObjectId(user_id)
-      })
-    );
-
     await databaseService.refreshTokens.insertOne(
       new RefreshToken({
         token: refresh_token,
@@ -92,11 +92,12 @@ class UsersService {
     };
   }
 
-  async checkEmailExist(email: string) {
-    const user = await databaseService.users.findOne({
-      email
-    });
-    return Boolean(user);
+  async logout(refresh_token: string) {
+    await databaseService.refreshTokens.deleteOne({ token: refresh_token });
+
+    return {
+      message: MESSAGE.LOGOUT_SUCCESS
+    };
   }
 }
 

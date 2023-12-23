@@ -5,6 +5,7 @@ import jwt, {
   SignOptions,
   VerifyOptions
 } from 'jsonwebtoken';
+import { TokenPayload } from '~/models/requests/User.requests';
 
 interface SignTokenParams {
   payload: string | Buffer | object;
@@ -39,13 +40,13 @@ export function verifyToken({
   token,
   secretOrPrivateKey = process.env.JWT_SECRET as string
 }: VerifyTokenParams) {
-  return new Promise<Jwt | JwtPayload | string>((resolve, reject) => {
+  return new Promise<TokenPayload>((resolve, reject) => {
     jwt.verify(token, secretOrPrivateKey, (error, decoded) => {
       if (error) {
         reject(error);
       }
 
-      resolve(decoded as JwtPayload);
+      resolve(decoded as TokenPayload);
     });
   });
 }

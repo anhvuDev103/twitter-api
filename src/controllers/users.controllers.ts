@@ -9,7 +9,9 @@ import {
   LoginRequestBody,
   LogoutRequestBody,
   RegisterRequestBody,
-  TokenPayload
+  ResetPasswordRequestBody,
+  TokenPayload,
+  VerifyForgotPasswordRequestBody
 } from '~/models/requests/User.requests';
 import { MESSAGE } from '~/constants/messages';
 import databaseService from '~/services/database.services';
@@ -19,8 +21,7 @@ import User from '~/models/schemas/User.schema';
 
 export const registerController = async (
   req: Request<ParamsDictionary, any, RegisterRequestBody>,
-  res: Response,
-  next: NextFunction
+  res: Response
 ) => {
   const result = await usersService.register(req.body);
   return res.json({
@@ -114,6 +115,27 @@ export const forgotPasswordController = async (
 ) => {
   const { _id } = req.user as User;
   const result = await usersService.forgotPassword(_id?.toString());
+
+  return res.json(result);
+};
+
+export const verifyForgotPasswordTokenController = async (
+  req: Request<ParamsDictionary, any, VerifyForgotPasswordRequestBody>,
+  res: Response
+) => {
+  return res.json({
+    message: MESSAGE.VERIFY_FORGOT_PASSWORD_SUCCESS
+  });
+};
+
+export const resetPasswordTokenController = async (
+  req: Request<ParamsDictionary, any, ResetPasswordRequestBody>,
+  res: Response
+) => {
+  const { user_id } = req.decoded_forgot_password_token as TokenPayload;
+  const { password } = req.body;
+
+  const result = await usersService.resetPassword(user_id, password);
 
   return res.json(result);
 };

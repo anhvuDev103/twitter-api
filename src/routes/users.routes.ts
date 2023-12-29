@@ -6,18 +6,21 @@ import {
   loginController,
   logoutController,
   registerController,
-  resendEmailVerifyController
+  resendEmailVerifyController,
+  resetPasswordTokenController,
+  verifyForgotPasswordTokenController
 } from '~/controllers/users.controllers';
 import {
   accessTokenValidator,
   emailVerifyTokenValidator,
-  refreshTokenValidator
+  refreshTokenValidator,
+  verifyForgotPasswordTokenValidator
 } from '~/middlewares/tokens.middlewares';
 import {
   forgotPasswordValidator,
   loginValidator,
-  logoutValidator,
-  registerValidator
+  registerValidator,
+  resetPasswordValidator
 } from '~/middlewares/users.middlewares';
 import { wrapRequestHandler } from '~/utils/handlers';
 
@@ -92,6 +95,30 @@ router.post(
   '/forgot-password',
   forgotPasswordValidator,
   wrapRequestHandler(forgotPasswordController)
+);
+
+/**
+ * Description: Verify forgot password token
+ * Path: /verify-forgot-password
+ * Method: POST
+ * Body: { forgot_password_token: string }
+ */
+router.post(
+  '/verify-forgot-password',
+  verifyForgotPasswordTokenValidator,
+  wrapRequestHandler(verifyForgotPasswordTokenController)
+);
+
+/**
+ * Description: reset password after verify forgot password token
+ * Path: /reset-password
+ * Method: PATCH
+ * Body: { forgot_password_token: string, password: string, confirm_password: string }
+ */
+router.post(
+  '/reset-password',
+  resetPasswordValidator,
+  wrapRequestHandler(resetPasswordTokenController)
 );
 
 export default router;

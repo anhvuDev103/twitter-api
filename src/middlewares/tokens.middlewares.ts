@@ -2,13 +2,14 @@ import { Request } from 'express';
 import { checkSchema } from 'express-validator';
 import { JsonWebTokenError } from 'jsonwebtoken';
 import { capitalize } from 'lodash';
+import { ObjectId } from 'mongodb';
 
 import HTTP_STATUS from '~/constants/httpStatus';
 import { MESSAGE } from '~/constants/messages';
 import { ErrorWithStatus } from '~/models/Errors';
 import databaseService from '~/services/database.services';
 import { verifyToken } from '~/utils/jwt';
-import { validate } from '~/utils/validation';
+import { forgotPasswordTokenSchema, validate } from '~/utils/validation';
 
 export const accessTokenValidator = validate(
   checkSchema(
@@ -137,6 +138,15 @@ export const emailVerifyTokenValidator = validate(
           }
         }
       }
+    },
+    ['body']
+  )
+);
+
+export const verifyForgotPasswordTokenValidator = validate(
+  checkSchema(
+    {
+      forgot_password_token: forgotPasswordTokenSchema
     },
     ['body']
   )

@@ -3,6 +3,7 @@ import { Router } from 'express';
 import {
   emailVerifyController,
   forgotPasswordController,
+  getMeController,
   loginController,
   logoutController,
   registerController,
@@ -110,9 +111,9 @@ router.post(
 );
 
 /**
- * Description: reset password after verify forgot password token
+ * Description: Reset password after verify forgot password token
  * Path: /reset-password
- * Method: PATCH
+ * Method: POST
  * Body: { forgot_password_token: string, password: string, confirm_password: string }
  */
 router.post(
@@ -120,5 +121,13 @@ router.post(
   resetPasswordValidator,
   wrapRequestHandler(resetPasswordTokenController)
 );
+
+/**
+ * Description: Get my profile
+ * Path: /me
+ * Method: GET
+ * Body: { forgot_password_token: string, password: string, confirm_password: string }
+ */
+router.get('/me', accessTokenValidator, wrapRequestHandler(getMeController));
 
 export default router;

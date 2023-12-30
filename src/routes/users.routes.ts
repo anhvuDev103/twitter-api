@@ -9,8 +9,10 @@ import {
   registerController,
   resendEmailVerifyController,
   resetPasswordTokenController,
+  updateMeController,
   verifyForgotPasswordTokenController
 } from '~/controllers/users.controllers';
+import { filterRequestBodyMiddleware } from '~/middlewares/common.middlewares';
 import {
   accessTokenValidator,
   emailVerifyTokenValidator,
@@ -21,8 +23,11 @@ import {
   forgotPasswordValidator,
   loginValidator,
   registerValidator,
-  resetPasswordValidator
+  resetPasswordValidator,
+  updateMeValidator,
+  verifiedUserValidator
 } from '~/middlewares/users.middlewares';
+import { UpdateMeRequestBody } from '~/models/requests/User.requests';
 import { wrapRequestHandler } from '~/utils/handlers';
 
 const router = Router();
@@ -126,8 +131,33 @@ router.post(
  * Description: Get my profile
  * Path: /me
  * Method: GET
+ * Header: { Authorization: Beared <access_token> }
  * Body: { forgot_password_token: string, password: string, confirm_password: string }
  */
 router.get('/me', accessTokenValidator, wrapRequestHandler(getMeController));
+
+/**
+ * Description: Update my profile
+ * Path: /me
+ * Method: PATCH
+ * Body: UserSchema
+ */
+router.patch(
+  '/me',
+  accessTokenValidator,
+  verifiedUserValidator,
+  updateMeValidator,
+  filterRequestBodyMiddleware<UpdateMeRequestBody>([
+    'name',
+    'date_of_birth',
+    'bio',
+    'location',
+    'website',
+    'username',
+    'avatar',
+    'cover_photo'
+  ]),
+  wrapRequestHandler(updateMeController)
+);
 
 export default router;

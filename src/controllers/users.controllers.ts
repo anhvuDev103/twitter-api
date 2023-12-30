@@ -11,6 +11,7 @@ import {
   RegisterRequestBody,
   ResetPasswordRequestBody,
   TokenPayload,
+  UpdateMeRequestBody,
   VerifyForgotPasswordRequestBody
 } from '~/models/requests/User.requests';
 import { MESSAGE } from '~/constants/messages';
@@ -34,8 +35,11 @@ export const loginController = async (
   req: Request<ParamsDictionary, any, LoginRequestBody>,
   res: Response
 ) => {
-  const { user } = req;
-  const result = await usersService.login(user!._id!.toString());
+  const user = req.user as User;
+  const result = await usersService.login({
+    user_id: user._id.toString(),
+    verify: user.verify
+  });
 
   return res.json({
     message: MESSAGE.LOGIN_SUCCESS,
@@ -113,8 +117,11 @@ export const forgotPasswordController = async (
   req: Request<ParamsDictionary, any, ForgotPasswordRequestBody>,
   res: Response
 ) => {
-  const { _id } = req.user as User;
-  const result = await usersService.forgotPassword(_id?.toString());
+  const { _id, verify } = req.user as User;
+  const result = await usersService.forgotPassword({
+    user_id: _id?.toString(),
+    verify
+  });
 
   return res.json(result);
 };
@@ -147,6 +154,21 @@ export const getMeController = async (req: Request, res: Response) => {
 
   return res.json({
     message: MESSAGE.GET_ME_SUCCESS,
+    result: user
+  });
+};
+
+export const updateMeController = async (
+  req: Request<ParamsDictionary, any, UpdateMeRequestBody>,
+  res: Response
+) => {
+  const { user_id } = req.decoded_authorization as TokenPayload;
+  const { body } = req;
+
+  const user = await usersService.updateMe(user_id, body);
+
+  return res.json({
+    message: MESSAGE.UPDATE_ME_SUCCESS,
     result: user
   });
 };

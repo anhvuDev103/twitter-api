@@ -68,7 +68,7 @@ export const passwordSchema: ParamSchema = {
   }
 };
 
-export const confirmPasswordsSchema: ParamSchema = {
+export const confirmPasswordSchema: ParamSchema = {
   ...passwordSchema,
   custom: {
     options: (value, { req }) => {
@@ -132,4 +132,52 @@ export const forgotPasswordTokenSchema: ParamSchema = {
       return true;
     }
   }
+};
+
+export const nameSchema: ParamSchema = {
+  notEmpty: {
+    errorMessage: MESSAGE.NAME_IS_REQUIRED
+  },
+  isString: {
+    errorMessage: MESSAGE.NAME_MUST_BE_A_STRING
+  },
+  isLength: {
+    options: {
+      min: 1,
+      max: 100
+    },
+    errorMessage: MESSAGE.NAME_LENGTH_MUST_BE_FROM_1_TO_100
+  },
+  trim: true
+};
+
+export const emailSchema: ParamSchema = {
+  notEmpty: {
+    errorMessage: MESSAGE.EMAIL_IS_REQUIRED
+  },
+  isEmail: {
+    errorMessage: MESSAGE.EMAIL_IS_INVALID
+  },
+  trim: true
+};
+
+export const dateOfBirthSchema: ParamSchema = {
+  isISO8601: {
+    options: {
+      strict: true,
+      strictSeparator: true
+    },
+    errorMessage: MESSAGE.DATE_OF_BIRTH_MUST_BE_ISO8601
+  }
+};
+
+export const withOptional: (
+  schema: ParamSchema
+) => Omit<ParamSchema, 'notEmpty'> = (schema) => {
+  const { notEmpty, ...removedNotEmptySchema } = schema;
+
+  return {
+    ...removedNotEmptySchema,
+    optional: true
+  };
 };

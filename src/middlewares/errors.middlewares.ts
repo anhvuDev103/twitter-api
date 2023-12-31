@@ -8,7 +8,7 @@ export const defaultErrorHandler = (
   err: EntityError | ErrorWithStatus | Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   if (err instanceof ErrorWithStatus) {
     return res

@@ -171,10 +171,39 @@ export const dateOfBirthSchema: ParamSchema = {
   }
 };
 
+/**
+ * Validate userId: [isValid] && [have user with the user_id]
+ */
+export const userIdSchema: ParamSchema = {
+  custom: {
+    options: async (value: string) => {
+      if (!ObjectId.isValid(value)) {
+        throw new ErrorWithStatus({
+          message: MESSAGE.INVALID_USER_ID,
+          status: HTTP_STATUS.NOT_FOUND
+        });
+      }
+
+      const user = await databaseService.users.findOne({
+        _id: new ObjectId(value)
+      });
+
+      if (user === null) {
+        throw new ErrorWithStatus({
+          message: MESSAGE.USER_NOT_FOUND,
+          status: HTTP_STATUS.NOT_FOUND
+        });
+      }
+
+      return true;
+    }
+  }
+};
+
 export const withOptional: (
   schema: ParamSchema
 ) => Omit<ParamSchema, 'notEmpty'> = (schema) => {
-  const { notEmpty, ...removedNotEmptySchema } = schema;
+  const { notEmpty: _notEmpty, ...removedNotEmptySchema } = schema;
 
   return {
     ...removedNotEmptySchema,

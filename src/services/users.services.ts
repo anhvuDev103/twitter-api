@@ -12,6 +12,8 @@ import { TokenType, UserVerifyStatus } from '~/constants/enums';
 import RefreshToken from '~/models/schemas/RefreshToken.schema';
 import { MESSAGE } from '~/constants/messages';
 import Follower from '~/models/schemas/Follower.schema';
+import { ErrorWithStatus } from '~/models/Errors';
+import HTTP_STATUS from '~/constants/httpStatus';
 
 interface SignTokenParams {
   user_id: string;
@@ -102,6 +104,7 @@ class UsersService {
   }
 
   async register(_payload: RegisterRequestBody) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirm_password, ...payload } = _payload;
 
     const user_id = new ObjectId();
@@ -361,8 +364,32 @@ class UsersService {
       };
     }
 
+    throw new ErrorWithStatus({
+      message: MESSAGE.ALREADY_FOLLOWED,
+      status: HTTP_STATUS.BAD_REQUEST
+    });
+  }
+
+  async unfollow(user_id: string, followed_user_id: string) {
+    const follower = await databaseService.followers.findOne({
+      user_id: new ObjectId(user_id),
+      followed_user_id: new ObjectId(followed_user_id)
+    });
+
+    if (follower === null) {
+      throw new ErrorWithStatus({
+        message: MESSAGE.ALREADY_UNFOLLOWED,
+        status: HTTP_STATUS.BAD_REQUEST
+      });
+    }
+
+    await databaseService.followers.deleteOne({
+      user_id: new ObjectId(user_id),
+      followed_user_id: new ObjectId(followed_user_id)
+    });
+
     return {
-      message: MESSAGE.FOLLOWED
+      message: MESSAGE.UNFOLLOW_SUCCESS
     };
   }
 }

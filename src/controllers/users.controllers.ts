@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 import usersService from '~/services/users.services';
@@ -20,11 +20,14 @@ import HTTP_STATUS from '~/constants/httpStatus';
 import { UserVerifyStatus } from '~/constants/enums';
 import User from '~/models/schemas/User.schema';
 import { ErrorWithStatus } from '~/models/Errors';
-import { getProfileRequestParams } from '~/models/params/User.params';
+import {
+  getProfileRequestParams,
+  UnfollowRequestParams
+} from '~/models/params/User.params';
 import { TokenPayload } from '~/models/interfaces';
 
 export const registerController = async (
-  req: Request<ParamsDictionary, any, RegisterRequestBody>,
+  req: Request<ParamsDictionary, unknown, RegisterRequestBody>,
   res: Response
 ) => {
   const result = await usersService.register(req.body);
@@ -35,7 +38,7 @@ export const registerController = async (
 };
 
 export const loginController = async (
-  req: Request<ParamsDictionary, any, LoginRequestBody>,
+  req: Request<ParamsDictionary, unknown, LoginRequestBody>,
   res: Response
 ) => {
   const user = req.user as User;
@@ -51,7 +54,7 @@ export const loginController = async (
 };
 
 export const logoutController = async (
-  req: Request<ParamsDictionary, any, LogoutRequestBody>,
+  req: Request<ParamsDictionary, unknown, LogoutRequestBody>,
   res: Response
 ) => {
   const { refresh_token } = req.body;
@@ -61,7 +64,7 @@ export const logoutController = async (
 };
 
 export const emailVerifyController = async (
-  req: Request<ParamsDictionary, any, EmailVerifyRequestBody>,
+  req: Request<ParamsDictionary, unknown, EmailVerifyRequestBody>,
   res: Response
 ) => {
   const { user_id } = req.decoded_email_verify_token as TokenPayload;
@@ -117,7 +120,7 @@ export const resendEmailVerifyController = async (
 };
 
 export const forgotPasswordController = async (
-  req: Request<ParamsDictionary, any, ForgotPasswordRequestBody>,
+  req: Request<ParamsDictionary, unknown, ForgotPasswordRequestBody>,
   res: Response
 ) => {
   const { _id, verify } = req.user as User;
@@ -130,7 +133,7 @@ export const forgotPasswordController = async (
 };
 
 export const verifyForgotPasswordTokenController = async (
-  req: Request<ParamsDictionary, any, VerifyForgotPasswordRequestBody>,
+  req: Request<ParamsDictionary, unknown, VerifyForgotPasswordRequestBody>,
   res: Response
 ) => {
   return res.json({
@@ -139,7 +142,7 @@ export const verifyForgotPasswordTokenController = async (
 };
 
 export const resetPasswordTokenController = async (
-  req: Request<ParamsDictionary, any, ResetPasswordRequestBody>,
+  req: Request<ParamsDictionary, unknown, ResetPasswordRequestBody>,
   res: Response
 ) => {
   const { user_id } = req.decoded_forgot_password_token as TokenPayload;
@@ -162,7 +165,7 @@ export const getMeController = async (req: Request, res: Response) => {
 };
 
 export const updateMeController = async (
-  req: Request<ParamsDictionary, any, UpdateMeRequestBody>,
+  req: Request<ParamsDictionary, unknown, UpdateMeRequestBody>,
   res: Response
 ) => {
   const { user_id } = req.decoded_authorization as TokenPayload;
@@ -198,7 +201,7 @@ export const getProfileController = async (
 };
 
 export const followController = async (
-  req: Request<ParamsDictionary, any, FollowRequestBody>,
+  req: Request<ParamsDictionary, unknown, FollowRequestBody>,
   res: Response
 ) => {
   const { user_id } = req.decoded_authorization as TokenPayload;
@@ -212,6 +215,25 @@ export const followController = async (
   }
 
   const result = await usersService.follow(user_id, followed_user_id);
+
+  return res.json(result);
+};
+
+export const unfollowController = async (
+  req: Request<UnfollowRequestParams>,
+  res: Response
+) => {
+  const { user_id } = req.decoded_authorization as TokenPayload;
+  const { followed_user_id } = req.params;
+
+  if (user_id === followed_user_id) {
+    throw new ErrorWithStatus({
+      message: MESSAGE.CAN_NOT_UNFOLLOW_YOURSELF,
+      status: HTTP_STATUS.BAD_REQUEST
+    });
+  }
+
+  const result = await usersService.unfollow(user_id, followed_user_id);
 
   return res.json(result);
 };

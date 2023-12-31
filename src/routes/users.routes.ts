@@ -11,6 +11,7 @@ import {
   registerController,
   resendEmailVerifyController,
   resetPasswordTokenController,
+  unfollowController,
   updateMeController,
   verifyForgotPasswordTokenController
 } from '~/controllers/users.controllers';
@@ -27,6 +28,7 @@ import {
   loginValidator,
   registerValidator,
   resetPasswordValidator,
+  unfollowUserValidator,
   updateMeValidator,
   verifiedUserValidator
 } from '~/middlewares/users.middlewares';
@@ -183,6 +185,20 @@ router.post(
   verifiedUserValidator,
   followUserValidator,
   wrapRequestHandler(followController)
+);
+
+/**
+ * Description: Follow user
+ * Path: /follow/:followed_user_id
+ * Method: DELETE
+ * Header: { Authorization: Beared <access_token> }
+ */
+router.delete(
+  '/follow/:followed_user_id',
+  accessTokenValidator,
+  verifiedUserValidator,
+  unfollowUserValidator,
+  wrapRequestHandler(unfollowController)
 );
 
 export default router;

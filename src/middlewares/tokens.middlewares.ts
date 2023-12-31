@@ -2,7 +2,6 @@ import { Request } from 'express';
 import { checkSchema } from 'express-validator';
 import { JsonWebTokenError } from 'jsonwebtoken';
 import { capitalize } from 'lodash';
-import { ObjectId } from 'mongodb';
 
 import HTTP_STATUS from '~/constants/httpStatus';
 import { MESSAGE } from '~/constants/messages';

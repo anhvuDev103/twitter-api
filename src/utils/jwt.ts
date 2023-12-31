@@ -1,10 +1,4 @@
-import jwt, {
-  Jwt,
-  JwtPayload,
-  Secret,
-  SignOptions,
-  VerifyOptions
-} from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import { TokenPayload } from '~/models/interfaces';
 
 interface SignTokenParams {

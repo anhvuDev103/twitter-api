@@ -1,6 +1,3 @@
-import { JwtPayload } from 'jsonwebtoken';
-import { TokenType, UserVerifyStatus } from '~/constants/enums';
-
 export interface RegisterRequestBody {
   name: string;
   email: string;

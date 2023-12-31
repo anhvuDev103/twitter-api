@@ -4,6 +4,7 @@ import { ParamsDictionary } from 'express-serve-static-core';
 
 import usersService from '~/services/users.services';
 import {
+  ChangePasswordRequestBody,
   EmailVerifyRequestBody,
   FollowRequestBody,
   ForgotPasswordRequestBody,
@@ -115,6 +116,21 @@ export const resendEmailVerifyController = async (
   }
 
   const result = await usersService.resendEmailVerify(user_id);
+
+  return res.json(result);
+};
+
+export const changePasswordController = async (
+  req: Request<ParamsDictionary, unknown, ChangePasswordRequestBody>,
+  res: Response
+) => {
+  const { user_id } = (req as Request).decoded_authorization as TokenPayload;
+  const { password: newPassword } = req.body;
+
+  const result = await usersService.changePassword(
+    user_id.toString(),
+    newPassword
+  );
 
   return res.json(result);
 };

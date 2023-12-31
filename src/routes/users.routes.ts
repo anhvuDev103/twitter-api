@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import {
+  changePasswordController,
   emailVerifyController,
   followController,
   forgotPasswordController,
@@ -23,6 +24,7 @@ import {
   verifyForgotPasswordTokenValidator
 } from '~/middlewares/tokens.middlewares';
 import {
+  changePasswordValidator,
   followUserValidator,
   forgotPasswordValidator,
   loginValidator,
@@ -94,6 +96,21 @@ router.post(
   '/resend-email-verify',
   accessTokenValidator,
   wrapRequestHandler(resendEmailVerifyController)
+);
+
+/**
+ * Description: Change password
+ * Path: /change-password
+ * Method: PUT
+ * Header: { Authorization: Beared <access_token> }
+ * Body: { current_password: string, password: string, confirm_password: string }
+ */
+router.put(
+  '/change-password',
+  accessTokenValidator,
+  verifiedUserValidator,
+  changePasswordValidator,
+  wrapRequestHandler(changePasswordController)
 );
 
 /**

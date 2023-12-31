@@ -19,6 +19,12 @@ export interface EmailVerifyRequestBody {
   email_verify_token: string;
 }
 
+export interface ChangePasswordRequestBody {
+  current_password: string;
+  password: string;
+  confirm_password: string;
+}
+
 export interface ForgotPasswordRequestBody {
   email: string;
 }

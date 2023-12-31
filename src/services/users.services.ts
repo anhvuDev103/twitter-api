@@ -228,6 +228,26 @@ class UsersService {
     };
   }
 
+  async changePassword(user_id: string, newPassword: string) {
+    await databaseService.users.updateOne(
+      {
+        _id: new ObjectId(user_id)
+      },
+      {
+        $set: {
+          password: hashPassword(newPassword)
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    );
+
+    return {
+      message: MESSAGE.CHANGE_PASSWORD_SUCCESS
+    };
+  }
+
   async forgotPassword({ user_id, verify }: ForgotPasswordParams) {
     const forgot_password_token = await this.signForgotPasswordToken({
       user_id,

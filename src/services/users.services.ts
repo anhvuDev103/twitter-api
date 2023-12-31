@@ -11,6 +11,7 @@ import { signToken } from '~/utils/jwt';
 import { TokenType, UserVerifyStatus } from '~/constants/enums';
 import RefreshToken from '~/models/schemas/RefreshToken.schema';
 import { MESSAGE } from '~/constants/messages';
+import Follower from '~/models/schemas/Follower.schema';
 
 interface SignTokenParams {
   user_id: string;
@@ -115,7 +116,8 @@ class UsersService {
         _id: user_id,
         email_verify_token,
         password: hashPassword(payload.password),
-        date_of_birth: new Date(payload.date_of_birth)
+        date_of_birth: new Date(payload.date_of_birth),
+        username: `user${user_id.toString()}`
       })
     );
 
@@ -318,6 +320,50 @@ class UsersService {
     );
 
     return updatedUser;
+  }
+
+  async getProfile(username: string) {
+    const user = await databaseService.users.findOne(
+      {
+        username
+      },
+      {
+        projection: {
+          password: false,
+          email_verify_token: false,
+          forgot_password_token: false,
+          verify: false,
+          created_at: false,
+          updated_at: false
+        }
+      }
+    );
+
+    return user;
+  }
+
+  async follow(user_id: string, followed_user_id: string) {
+    const follower = await databaseService.followers.findOne({
+      user_id: new ObjectId(user_id),
+      followed_user_id: new ObjectId(followed_user_id)
+    });
+
+    if (follower === null) {
+      await databaseService.followers.insertOne(
+        new Follower({
+          user_id: new ObjectId(user_id),
+          followed_user_id: new ObjectId(followed_user_id)
+        })
+      );
+
+      return {
+        message: MESSAGE.FOLLOW_SUCCESS
+      };
+    }
+
+    return {
+      message: MESSAGE.FOLLOWED
+    };
   }
 }
 

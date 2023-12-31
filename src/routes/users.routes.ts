@@ -2,8 +2,10 @@ import { Router } from 'express';
 
 import {
   emailVerifyController,
+  followController,
   forgotPasswordController,
   getMeController,
+  getProfileController,
   loginController,
   logoutController,
   registerController,
@@ -20,6 +22,7 @@ import {
   verifyForgotPasswordTokenValidator
 } from '~/middlewares/tokens.middlewares';
 import {
+  followUserValidator,
   forgotPasswordValidator,
   loginValidator,
   registerValidator,
@@ -158,6 +161,28 @@ router.patch(
     'cover_photo'
   ]),
   wrapRequestHandler(updateMeController)
+);
+
+/**
+ * Description: Get user profile
+ * Path: /:username
+ * Method: GET
+ */
+router.get('/:username', wrapRequestHandler(getProfileController));
+
+/**
+ * Description: Follow user
+ * Path: /follow
+ * Method: POST
+ * Header: { Authorization: Beared <access_token> }
+ * Body: { followed_user_id: string }
+ */
+router.post(
+  '/follow',
+  accessTokenValidator,
+  verifiedUserValidator,
+  followUserValidator,
+  wrapRequestHandler(followController)
 );
 
 export default router;

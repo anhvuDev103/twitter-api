@@ -5,12 +5,12 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import usersService from '~/services/users.services';
 import {
   EmailVerifyRequestBody,
+  FollowRequestBody,
   ForgotPasswordRequestBody,
   LoginRequestBody,
   LogoutRequestBody,
   RegisterRequestBody,
   ResetPasswordRequestBody,
-  TokenPayload,
   UpdateMeRequestBody,
   VerifyForgotPasswordRequestBody
 } from '~/models/requests/User.requests';
@@ -19,6 +19,9 @@ import databaseService from '~/services/database.services';
 import HTTP_STATUS from '~/constants/httpStatus';
 import { UserVerifyStatus } from '~/constants/enums';
 import User from '~/models/schemas/User.schema';
+import { ErrorWithStatus } from '~/models/Errors';
+import { getProfileRequestParams } from '~/models/params/User.params';
+import { TokenPayload } from '~/models/interfaces';
 
 export const registerController = async (
   req: Request<ParamsDictionary, any, RegisterRequestBody>,
@@ -171,4 +174,44 @@ export const updateMeController = async (
     message: MESSAGE.UPDATE_ME_SUCCESS,
     result: user
   });
+};
+
+export const getProfileController = async (
+  req: Request<getProfileRequestParams>,
+  res: Response
+) => {
+  const { username } = req.params;
+
+  const user = await usersService.getProfile(username);
+
+  if (user === null) {
+    throw new ErrorWithStatus({
+      message: MESSAGE.USER_NOT_FOUND,
+      status: HTTP_STATUS.NOT_FOUND
+    });
+  }
+
+  return res.json({
+    message: MESSAGE.GET_PROFILE_SUCCESS,
+    result: user
+  });
+};
+
+export const followController = async (
+  req: Request<ParamsDictionary, any, FollowRequestBody>,
+  res: Response
+) => {
+  const { user_id } = req.decoded_authorization as TokenPayload;
+  const { followed_user_id } = req.body;
+
+  if (user_id === followed_user_id) {
+    throw new ErrorWithStatus({
+      message: MESSAGE.CAN_NOT_FOLLOW_YOURSELF,
+      status: HTTP_STATUS.BAD_REQUEST
+    });
+  }
+
+  const result = await usersService.follow(user_id, followed_user_id);
+
+  return res.json(result);
 };

@@ -5,7 +5,7 @@ import jwt, {
   SignOptions,
   VerifyOptions
 } from 'jsonwebtoken';
-import { TokenPayload } from '~/models/requests/User.requests';
+import { TokenPayload } from '~/models/interfaces';
 
 interface SignTokenParams {
   payload: string | Buffer | object;

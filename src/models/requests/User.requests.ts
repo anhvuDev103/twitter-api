@@ -46,8 +46,6 @@ export interface ResetPasswordRequestBody {
   confirm_password: string;
 }
 
-export interface TokenPayload extends JwtPayload {
-  user_id: string;
-  token_type: TokenType;
-  verify: UserVerifyStatus;
+export interface FollowRequestBody {
+  followed_user_id: string;
 }

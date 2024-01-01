@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { PartialByKeys } from '~/utils/types';
+import { PartialByKeys } from '@utils/types';
 
 class RefreshToken {
   _id: ObjectId;

@@ -1,6 +1,6 @@
-import HTTP_STATUS from '~/constants/httpStatus';
-import { MESSAGE } from '~/constants/messages';
-import { RequireByKeys } from '~/utils/types';
+import HTTP_STATUS from '@constants/httpStatus';
+import { MESSAGE } from '@constants/messages';
+import { RequireByKeys } from '@utils/types';
 
 type ErrorType = Record<
   string,

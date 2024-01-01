@@ -8,6 +8,7 @@ import {
   getMeController,
   getProfileController,
   loginController,
+  loginWithGoogleController,
   logoutController,
   registerController,
   resendEmailVerifyController,
@@ -15,14 +16,14 @@ import {
   unfollowController,
   updateMeController,
   verifyForgotPasswordTokenController
-} from '~/controllers/users.controllers';
-import { filterRequestBodyMiddleware } from '~/middlewares/common.middlewares';
+} from '@controllers/users.controllers';
+import { filterRequestBodyMiddleware } from '@middlewares/common.middlewares';
 import {
   accessTokenValidator,
   emailVerifyTokenValidator,
   refreshTokenValidator,
   verifyForgotPasswordTokenValidator
-} from '~/middlewares/tokens.middlewares';
+} from '@middlewares/tokens.middlewares';
 import {
   changePasswordValidator,
   followUserValidator,
@@ -33,9 +34,9 @@ import {
   unfollowUserValidator,
   updateMeValidator,
   verifiedUserValidator
-} from '~/middlewares/users.middlewares';
-import { UpdateMeRequestBody } from '~/models/requests/User.requests';
-import { wrapRequestHandler } from '~/utils/handlers';
+} from '@middlewares/users.middlewares';
+import { UpdateMeRequestBody } from '@models/requests/User.requests';
+import { wrapRequestHandler } from '@utils/handlers';
 
 const router = Router();
 
@@ -59,6 +60,13 @@ router.post(
  * Body: { email: string, password: string,
  */
 router.post('/login', loginValidator, wrapRequestHandler(loginController));
+
+/**
+ * Description: Login with Google (OAuth 2.0)
+ * Path: /oauth/google
+ * Method: GET
+ */
+router.get('/oauth/google', wrapRequestHandler(loginWithGoogleController));
 
 /**
  * Description: Logout a user

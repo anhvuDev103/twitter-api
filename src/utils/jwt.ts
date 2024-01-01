@@ -1,5 +1,5 @@
-import jwt, { Secret, SignOptions } from 'jsonwebtoken';
-import { TokenPayload } from '~/models/interfaces';
+import jwt, { DecodeOptions, Secret, SignOptions } from 'jsonwebtoken';
+import { IdTokenPayload, TokenPayload } from '@models/interfaces';
 
 interface SignTokenParams {
   payload: string | Buffer | object;
@@ -10,6 +10,11 @@ interface SignTokenParams {
 interface VerifyTokenParams {
   token: string;
   secretOrPrivateKey: Secret;
+}
+
+interface DecodeTokenParams {
+  token: string;
+  options?: DecodeOptions;
 }
 
 export function signToken({
@@ -40,4 +45,10 @@ export function verifyToken({ token, secretOrPrivateKey }: VerifyTokenParams) {
       resolve(decoded as TokenPayload);
     });
   });
+}
+
+export function decodeToken({ token, options }: DecodeTokenParams) {
+  const decoded = jwt.decode(token, options) as IdTokenPayload;
+
+  return decoded;
 }

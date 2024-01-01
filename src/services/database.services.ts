@@ -1,7 +1,7 @@
 import { Collection, Db, MongoClient } from 'mongodb';
-import Follower from '~/models/schemas/Follower.schema';
-import RefreshToken from '~/models/schemas/RefreshToken.schema';
-import User from '~/models/schemas/User.schema';
+import Follower from '@models/schemas/Follower.schema';
+import RefreshToken from '@models/schemas/RefreshToken.schema';
+import User from '@models/schemas/User.schema';
 
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@twitter.cnuqz91.mongodb.net/?retryWrites=true&w=majority`;
 

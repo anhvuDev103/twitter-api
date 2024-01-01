@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 
-import { UserVerifyStatus } from '~/constants/enums';
-import { RequireByKeys } from '~/utils/types';
+import { UserVerifyStatus } from '@constants/enums';
+import { RequireByKeys } from '@utils/types';
 
 type UserPayload = RequireByKeys<
   User,
@@ -12,7 +12,7 @@ class User {
   _id: ObjectId;
   name: string;
   email: string;
-  date_of_birth: Date;
+  date_of_birth: Date | null;
   password: string;
   created_at: Date;
   updated_at: Date;
@@ -33,7 +33,7 @@ class User {
     this._id = user._id || new ObjectId();
     this.name = user.name || '';
     this.email = user.email;
-    this.date_of_birth = user.date_of_birth || new Date();
+    this.date_of_birth = user.date_of_birth || null;
     this.password = user.password;
     this.created_at = user.created_at || date;
     this.updated_at = user.updated_at || date;

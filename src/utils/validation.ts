@@ -5,11 +5,11 @@ import {
   ParamSchema,
   RunnableValidationChains
 } from 'express-validator/src/middlewares/schema';
-import HTTP_STATUS from '~/constants/httpStatus';
-import { MESSAGE } from '~/constants/messages';
-import { EntityError, ErrorWithStatus } from '~/models/Errors';
+import HTTP_STATUS from '@constants/httpStatus';
+import { MESSAGE } from '@constants/messages';
+import { EntityError, ErrorWithStatus } from '@models/Errors';
 import { verifyToken } from './jwt';
-import databaseService from '~/services/database.services';
+import databaseService from '@services/database.services';
 import { ObjectId } from 'mongodb';
 import { JsonWebTokenError } from 'jsonwebtoken';
 import { capitalize } from 'lodash';
@@ -162,6 +162,9 @@ export const emailSchema: ParamSchema = {
 };
 
 export const dateOfBirthSchema: ParamSchema = {
+  notEmpty: {
+    errorMessage: MESSAGE.DATE_OF_BIRTH_IS_REQUIRED
+  },
   isISO8601: {
     options: {
       strict: true,

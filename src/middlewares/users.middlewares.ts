@@ -1,16 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 import { checkSchema } from 'express-validator';
 import { ObjectId } from 'mongodb';
-import { UserVerifyStatus } from '~/constants/enums';
-import HTTP_STATUS from '~/constants/httpStatus';
+import { UserVerifyStatus } from '@constants/enums';
+import HTTP_STATUS from '@constants/httpStatus';
 
-import { MESSAGE } from '~/constants/messages';
-import { REGEX_USERNAME } from '~/constants/regexs';
-import { ErrorWithStatus } from '~/models/Errors';
-import { TokenPayload } from '~/models/interfaces';
-import databaseService from '~/services/database.services';
-import usersService from '~/services/users.services';
-import { hashPassword } from '~/utils/crypto';
+import { MESSAGE } from '@constants/messages';
+import { REGEX_USERNAME } from '@constants/regexs';
+import { ErrorWithStatus } from '@models/Errors';
+import { TokenPayload } from '@models/interfaces';
+import databaseService from '@services/database.services';
+import usersService from '@services/users.services';
+import { hashPassword } from '@utils/crypto';
 import {
   confirmPasswordSchema,
   dateOfBirthSchema,
@@ -21,7 +21,7 @@ import {
   userIdSchema,
   validate,
   withOptional
-} from '~/utils/validation';
+} from '@utils/validation';
 
 export const registerValidator = validate(
   checkSchema(

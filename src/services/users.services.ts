@@ -1,19 +1,22 @@
 import { ObjectId } from 'mongodb';
+import axios from 'axios';
+import jwt from 'jsonwebtoken';
 
-import User from '~/models/schemas/User.schema';
+import User from '@models/schemas/User.schema';
 import {
   RegisterRequestBody,
   UpdateMeRequestBody
-} from '~/models/requests/User.requests';
+} from '@models/requests/User.requests';
+import { hashPassword } from '@utils/crypto';
+import { decodeToken, signToken, verifyToken } from '@utils/jwt';
+import { TokenType, UserVerifyStatus } from '@constants/enums';
+import RefreshToken from '@models/schemas/RefreshToken.schema';
+import { MESSAGE } from '@constants/messages';
+import Follower from '@models/schemas/Follower.schema';
+import { ErrorWithStatus } from '@models/Errors';
+import HTTP_STATUS from '@constants/httpStatus';
+import { GoogleOauthTokenResponse } from '@models/responses/User.responses';
 import databaseService from './database.services';
-import { hashPassword } from '~/utils/crypto';
-import { signToken } from '~/utils/jwt';
-import { TokenType, UserVerifyStatus } from '~/constants/enums';
-import RefreshToken from '~/models/schemas/RefreshToken.schema';
-import { MESSAGE } from '~/constants/messages';
-import Follower from '~/models/schemas/Follower.schema';
-import { ErrorWithStatus } from '~/models/Errors';
-import HTTP_STATUS from '~/constants/httpStatus';
 
 interface SignTokenParams {
   user_id: string;
@@ -28,6 +31,10 @@ interface LoginParams {
 interface ForgotPasswordParams {
   user_id: string;
   verify: UserVerifyStatus;
+}
+
+interface RegisterOptions {
+  signVerifyEmailToken?: boolean;
 }
 
 class UsersService {
@@ -96,6 +103,28 @@ class UsersService {
     });
   }
 
+  private async getOauthGoogleToken(code: string) {
+    const body = {
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+      grant_type: 'authorization_code'
+    };
+
+    const { data } = await axios.post<GoogleOauthTokenResponse>(
+      'https://oauth2.googleapis.com/token',
+      body,
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    );
+
+    return data;
+  }
+
   async checkEmailExist(email: string) {
     const user = await databaseService.users.findOne({
       email
@@ -103,15 +132,22 @@ class UsersService {
     return Boolean(user);
   }
 
-  async register(_payload: RegisterRequestBody) {
+  async register(
+    payload: Omit<RegisterRequestBody, 'confirm_password'>,
+    options?: RegisterOptions
+  ) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { confirm_password, ...payload } = _payload;
+    const { signVerifyEmailToken = true } = options || {};
 
     const user_id = new ObjectId();
-    const email_verify_token = await this.signEmailVerifyToken({
-      user_id: user_id.toString(),
-      verify: UserVerifyStatus.Unverified
-    });
+
+    let email_verify_token = '';
+    if (signVerifyEmailToken) {
+      email_verify_token = await this.signEmailVerifyToken({
+        user_id: user_id.toString(),
+        verify: UserVerifyStatus.Unverified
+      });
+    }
 
     await databaseService.users.insertOne(
       new User({
@@ -119,7 +155,7 @@ class UsersService {
         _id: user_id,
         email_verify_token,
         password: hashPassword(payload.password),
-        date_of_birth: new Date(payload.date_of_birth),
+        date_of_birth: new Date(payload.date_of_birth as string),
         username: `user${user_id.toString()}`
       })
     );
@@ -163,6 +199,48 @@ class UsersService {
     };
   }
 
+  async loginWithGoogle(code: string) {
+    const { id_token } = await this.getOauthGoogleToken(code);
+
+    const userInfo = decodeToken({
+      token: id_token
+    });
+
+    if (!userInfo.email_verified) {
+      throw new ErrorWithStatus({
+        message: MESSAGE.GMAIL_NOT_VERIFIED,
+        status: HTTP_STATUS.BAD_REQUEST
+      });
+    }
+
+    const user = await databaseService.users.findOne({
+      email: userInfo.email
+    });
+
+    //If email already existed in DB, let user login to the app
+    if (user) {
+      const result = await this.login({
+        user_id: user._id.toString(),
+        verify: user.verify
+      });
+
+      return result;
+    }
+
+    const registerUserPayload = {
+      name: userInfo.name,
+      email: userInfo.email,
+      password: userInfo.at_hash,
+      date_of_birth: null
+    };
+
+    const result = await this.register(registerUserPayload, {
+      signVerifyEmailToken: false
+    });
+
+    return result;
+  }
+
   async logout(refresh_token: string) {
     await databaseService.refreshTokens.deleteOne({ token: refresh_token });
 
@@ -194,6 +272,13 @@ class UsersService {
     ]);
 
     const [access_token, refresh_token] = tokens;
+
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({
+        token: refresh_token,
+        user_id: new ObjectId(user_id)
+      })
+    );
 
     return {
       access_token,

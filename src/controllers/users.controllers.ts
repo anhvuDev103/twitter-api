@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
-import usersService from '~/services/users.services';
+import usersService from '@services/users.services';
 import {
   ChangePasswordRequestBody,
   EmailVerifyRequestBody,
@@ -14,18 +14,19 @@ import {
   ResetPasswordRequestBody,
   UpdateMeRequestBody,
   VerifyForgotPasswordRequestBody
-} from '~/models/requests/User.requests';
-import { MESSAGE } from '~/constants/messages';
-import databaseService from '~/services/database.services';
-import HTTP_STATUS from '~/constants/httpStatus';
-import { UserVerifyStatus } from '~/constants/enums';
-import User from '~/models/schemas/User.schema';
-import { ErrorWithStatus } from '~/models/Errors';
+} from '@models/requests/User.requests';
+import { MESSAGE } from '@constants/messages';
+import databaseService from '@services/database.services';
+import HTTP_STATUS from '@constants/httpStatus';
+import { UserVerifyStatus } from '@constants/enums';
+import User from '@models/schemas/User.schema';
+import { ErrorWithStatus } from '@models/Errors';
 import {
   getProfileRequestParams,
   UnfollowRequestParams
-} from '~/models/params/User.params';
-import { TokenPayload } from '~/models/interfaces';
+} from '@models/params/User.params';
+import { TokenPayload } from '@models/interfaces';
+import { LoginWithGoogleQuery } from '@models/queries/User.queries';
 
 export const registerController = async (
   req: Request<ParamsDictionary, unknown, RegisterRequestBody>,
@@ -52,6 +53,20 @@ export const loginController = async (
     message: MESSAGE.LOGIN_SUCCESS,
     result
   });
+};
+
+export const loginWithGoogleController = async (
+  req: Request<ParamsDictionary, unknown, unknown, LoginWithGoogleQuery>,
+  res: Response
+) => {
+  const { code } = req.query;
+
+  const { access_token, refresh_token } =
+    await usersService.loginWithGoogle(code);
+
+  const redirectUrl = `${process.env.CLIENT_REDIRECT_CALLBACK}?access_token=${access_token}&refresh_token=${refresh_token}`;
+
+  return res.redirect(redirectUrl);
 };
 
 export const logoutController = async (

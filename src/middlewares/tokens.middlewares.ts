@@ -3,12 +3,12 @@ import { checkSchema } from 'express-validator';
 import { JsonWebTokenError } from 'jsonwebtoken';
 import { capitalize } from 'lodash';
 
-import HTTP_STATUS from '~/constants/httpStatus';
-import { MESSAGE } from '~/constants/messages';
-import { ErrorWithStatus } from '~/models/Errors';
-import databaseService from '~/services/database.services';
-import { verifyToken } from '~/utils/jwt';
-import { forgotPasswordTokenSchema, validate } from '~/utils/validation';
+import HTTP_STATUS from '@constants/httpStatus';
+import { MESSAGE } from '@constants/messages';
+import { ErrorWithStatus } from '@models/Errors';
+import databaseService from '@services/database.services';
+import { verifyToken } from '@utils/jwt';
+import { forgotPasswordTokenSchema, validate } from '@utils/validation';
 
 export const accessTokenValidator = validate(
   checkSchema(

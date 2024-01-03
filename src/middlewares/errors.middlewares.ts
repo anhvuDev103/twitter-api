@@ -21,6 +21,7 @@ export const defaultErrorHandler = (
   });
 
   return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-    message: err.message
+    message: err.message,
+    errorInfo: omit(err, ['stack'])
   });
 };

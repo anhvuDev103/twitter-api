@@ -33,10 +33,7 @@ export const registerController = async (
   res: Response
 ) => {
   const result = await usersService.register(req.body);
-  return res.json({
-    status: 'OK',
-    result
-  });
+  return res.json(result);
 };
 
 export const loginController = async (

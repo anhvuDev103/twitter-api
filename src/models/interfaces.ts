@@ -1,6 +1,6 @@
 import { JwtPayload } from 'jsonwebtoken';
 
-import { TokenType, UserVerifyStatus } from '@constants/enums';
+import { MediaType, TokenType, UserVerifyStatus } from '@constants/enums';
 
 export interface TokenPayload extends JwtPayload {
   user_id: string;
@@ -17,4 +17,9 @@ export interface IdTokenPayload extends JwtPayload {
   given_name: string;
   family_name: string;
   locale: string;
+}
+
+export interface Media {
+  url: string;
+  type: MediaType;
 }

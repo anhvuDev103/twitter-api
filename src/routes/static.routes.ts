@@ -1,4 +1,7 @@
-import { serveImageController } from '@controllers/medias.controllers';
+import {
+  serveImageController,
+  serveVideoController
+} from '@controllers/medias.controllers';
 import { Router } from 'express';
 
 const router = Router();
@@ -9,5 +12,12 @@ const router = Router();
  * Method: GET
  */
 router.get('/image/:name', serveImageController);
+
+/**
+ * Description: Serve video
+ * Path: /video/:name
+ * Method: GET
+ */
+router.get('/video/:name', serveVideoController);
 
 export default router;
